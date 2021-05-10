@@ -10,6 +10,8 @@ server_cert = 'server.crt'
 client_cert = 'client.crt'
 client_key = 'client.key'
 
+
+
 context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=server_cert)
 context.load_cert_chain(certfile=client_cert, keyfile=client_key)
 
