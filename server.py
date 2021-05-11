@@ -18,11 +18,8 @@ context.load_verify_locations(cafile=client_certs)
 bindsocket = socket.socket()
 bindsocket.bind((listen_addr, listen_port))
 bindsocket.listen(5)
-cont =0
 while True:
     print("Waiting for client")
-    cont = cont+1
-    print (cont)
     newsocket, fromaddr = bindsocket.accept()
     print("Client connected: {}:{}".format(fromaddr[0], fromaddr[1]))
     conn = context.wrap_socket(newsocket, server_side=True)

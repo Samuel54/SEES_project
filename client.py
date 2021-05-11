@@ -4,7 +4,7 @@ import socket
 import ssl
 
 host_addr = '127.0.0.1'
-host_port = 8082
+host_port = 12333
 server_sni_hostname = 'example.com'
 server_cert = 'server.crt'
 client_cert = 'client.crt'
