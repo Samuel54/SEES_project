@@ -1,34 +1,23 @@
-#!/usr/bin/python3
-"""Multi-Thread server with Perfect Forward Secrecy"""
 import socket
 import os
 from _thread import *
 import ssl
-import auxLib
+
 
 
 ####
 def multi_threaded_client(connection):
-    # Counter for sent and received messages
-    count_send = 0
-    count_recv = 0
-    message = str('Server is working:').encode('utf-8')
-    count_send = auxLib.send_message(connection, message, count_send)
-
+    print("antes")
+    connection.send(str.encode('Server is working:'))
+    print("depois")
     while True:
-        message, count_recv = auxLib.receive_message(connection, count_recv)
-        print(message.decode('utf-8'))
-        message = 'Server message: ' + message.decode('utf-8')
-        message = message.encode('utf-8')
-        if not message:
+        data = connection.recv(2048)
+        response = 'Server message: ' + data.decode('utf-8')
+        if not data:
             break
-        count_send = auxLib.send_message(connection, message, count_send)
+        connection.sendall(str.encode(response))
     connection.close()
 
-
-######
-# Create the register file
-auxLib.make_user_register()
 
 ######
 # Define the ssl context parameters
@@ -43,11 +32,10 @@ context.load_verify_locations(cafile=client_certs)
 context.set_ecdh_curve('prime256v1')
 
 host = '127.0.0.1'
-port = 12334
+port = 12333
 ThreadCount = 0
 
 ServerSideSocket = socket.socket()
-ServerSideSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 try:
     ServerSideSocket.bind((host, port))
 except socket.error as e:
@@ -66,5 +54,4 @@ while True:
     start_new_thread(multi_threaded_client, (secure_connection,))
     ThreadCount += 1
     print('Thread Number: ' + str(ThreadCount))
-
 ServerSideSocket.close()
