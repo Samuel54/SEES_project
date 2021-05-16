@@ -27,8 +27,8 @@ def multi_threaded_client(connection):
 
 
 ######
-# Create the register file
-auxLib.make_user_register()
+# Create the pre-register file
+auxLib.make_user_pre_register()
 
 ######
 # Define the ssl context parameters
@@ -40,7 +40,7 @@ context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 context.verify_mode = ssl.CERT_REQUIRED
 context.load_cert_chain(certfile=server_cert, keyfile=server_key)
 context.load_verify_locations(cafile=client_certs)
-context.set_ecdh_curve('prime256v1')
+context.set_ecdh_curve('prime256v1')  # Perfect forward secrecy
 
 host = '127.0.0.1'
 port = 12334

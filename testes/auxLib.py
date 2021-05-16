@@ -22,12 +22,12 @@ def receive_message(self, count):
     return message, count
 
 
-def make_user_register():
+def make_user_pre_register():
     """Creates a file with client @username and an hashed one-time ID"""
     user_list = {}
-    with open('user_register.txt', 'wb+') as handle:
+    with open('user_pre_register.txt', 'wb+') as handle:
         pickle.dump(user_list, handle)
-    with open('user_register.txt', 'rb') as handle:
+    with open('user_pre_register.txt', 'rb') as handle:
         user_list = pickle.loads(handle.read())
 
     aux = 'Y'
@@ -47,6 +47,6 @@ def make_user_register():
                     user_list[username] = hashed_user_id
                     aux1 = 1
                     print("Username saved")
-    with open('user_register.txt', 'wb+') as handle:
+    with open('user_pre_register.txt', 'wb+') as handle:
         pickle.dump(user_list, handle)
 
