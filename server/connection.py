@@ -1,6 +1,9 @@
 import _thread
+import logging
 import socket
 import ssl
+
+from administration import Administration
 
 
 class Connection:
@@ -16,15 +19,15 @@ class Connection:
         :param port: Port from which the server will listen to
         :return: Initialized socket ready to listen for new connections
         """
-        print('Starting server on: ' + hostname + ':' + str(port))
+        logging.info('Starting server on: ' + hostname + ':' + str(port))
         internal_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             internal_socket.bind((hostname, port))
         except socket.error as exception:
-            print(exception)
+            logging.error(exception)
             quit(1)
 
-        print('Socket created and listening...')
+        logging.info('Socket created and listening...')
         return internal_socket
 
     @staticmethod
@@ -51,11 +54,13 @@ class Connection:
         context = Connection._initialize_ssl_context()
         listening_socket.listen(5)
         while True:
+            if not Administration.RUNNING:
+                quit(0)
             client_socket, client_address = listening_socket.accept()
-            print('Accepted connection from:' + client_address[0] + ':' + str(client_address[1]))
+            logging.info('Accepted connection from:' + client_address[0] + ':' + str(client_address[1]))
 
             connection = context.wrap_socket(client_socket, server_side=True)
-            print('SSL connection established. Peer: {}'.format(connection.getpeercert()))
+            logging.info('SSL connection established. Peer: {}'.format(connection.getpeercert()))
 
             _thread.start_new_thread(function_set, (connection,))
 
