@@ -1,6 +1,8 @@
 import _thread
 import logging
 import socket
+
+from crypto.helpers import Cryptography
 from user import User
 
 
@@ -13,6 +15,11 @@ class Administration:
 
     @staticmethod
     def run_administration(Server):
+        if Cryptography.get_passphrase() == "":
+            while len(Cryptography.get_passphrase()) != 32:
+                passphrase = input("Please insert the server's passphrase (32 characters): ")
+                Cryptography.set_passphrase(passphrase)
+
         """
         Method to start the menu used by the administrator
         """

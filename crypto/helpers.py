@@ -24,6 +24,7 @@ class Cryptography:
     @staticmethod
     def cipher(key, data):
         iv = Cryptography.random_bytes(16)
+        print(key)
         key_bytes = str.encode(key)
         data_bytes = str.encode(data)
         cipher = AES.new(key_bytes, AES.MODE_GCM, iv)
