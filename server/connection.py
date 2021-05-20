@@ -40,6 +40,7 @@ class Connection:
         internal_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         internal_context.verify_mode = ssl.CERT_REQUIRED
         internal_context.load_cert_chain(certfile='server.crt', keyfile='server.key')
+        internal_context.load_verify_locations(cafile='client.crt')
         internal_context.set_ecdh_curve('prime256v1')
 
         return internal_context
@@ -56,13 +57,16 @@ class Connection:
         while True:
             if not Administration.RUNNING:
                 quit(0)
-            client_socket, client_address = listening_socket.accept()
-            logging.info('Accepted connection from:' + client_address[0] + ':' + str(client_address[1]))
+            try:
+                client_socket, client_address = listening_socket.accept()
+                logging.info('Accepted connection from:' + client_address[0] + ':' + str(client_address[1]))
 
-            connection = context.wrap_socket(client_socket, server_side=True)
-            logging.info('SSL connection established. Peer: {}'.format(connection.getpeercert()))
+                connection = context.wrap_socket(client_socket, server_side=True)
+                logging.info('SSL connection established. Peer: {}'.format(connection.getpeercert()))
 
-            _thread.start_new_thread(function_set, (connection,))
+                _thread.start_new_thread(function_set, (connection,))
+            except ssl.SSLError as exception:
+                logging.error("Failed to accept connection!", exception)
 
     @staticmethod
     def close(server_socket):

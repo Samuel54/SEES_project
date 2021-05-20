@@ -50,5 +50,6 @@ class Administration:
         :param client_socket: Socket where a connection with a client is happening
         """
 
+        client_socket.send('HELLO'.encode())
         if not Administration.RUNNING:
             quit(0)
