@@ -1,14 +1,18 @@
+import base64
 import logging
 import os
 import sys
 
-from functionalities import Functionalities
 from connection import Connection
+from crypto.helpers import Cryptography
+from functionalities import Functionalities
 
 
 class Client:
     _hostname = '127.0.0.1'
     _port = 8081
+    _pin = ''
+    _LOCAL_DATA_FILE = 'data'
 
     @staticmethod
     def get_hostname():
@@ -29,6 +33,72 @@ class Client:
         """
 
         Client._hostname = hostname
+
+    @staticmethod
+    def set_pin(pin):
+        """
+        Method to save the user's PIN in memory
+
+        :param pin: PIN to be set
+        """
+
+        Client._pin = pin
+
+    @staticmethod
+    def save_pin(username, pin):
+        """
+        Method to persist the user's PIN
+
+        :param username: Username to be saved into the filesystem
+        :param pin: PIN to be saved into the filesystem
+        """
+
+        hashed_pin = Cryptography.hash_data(f'{username}:{pin}')
+        with open(os.getcwd() + '/' + Client._LOCAL_DATA_FILE, 'w') as f:
+            f.write(hashed_pin.hex())
+        f.close()
+        Client.set_pin(pin)
+
+    @staticmethod
+    def pin_exists():
+        """
+        Method to verify if this installation already has a PIN set
+
+        :return: True if it does, false otherwise
+        """
+        data_file = os.getcwd() + '/' + Client._LOCAL_DATA_FILE
+        if os.path.exists(os.getcwd() + '/' + Client._LOCAL_DATA_FILE):
+            with open(data_file, 'r') as f:
+                hash = f.readline()
+            f.close()
+
+            return len(hash) > 0
+        else:
+            return False
+
+    @staticmethod
+    def verify_pin(username, pin):
+        """
+        Method to verify the PIN inserted
+
+        :return: True if it is the same as the one saved, false otherwise
+        """
+
+        with open(os.getcwd() + '/' + Client._LOCAL_DATA_FILE, 'r') as f:
+            pin_hash = f.readline()
+        f.close()
+
+        return Cryptography.verify_hash(f'{username}:{pin}', pin_hash)
+
+    @staticmethod
+    def get_pin():
+        """
+        Method to get the user's PIN stored in memory
+
+        :return: User's PIN
+        """
+
+        return Client._pin
 
     @staticmethod
     def get_port():

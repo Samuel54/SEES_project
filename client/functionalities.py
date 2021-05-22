@@ -18,10 +18,13 @@ class Functionalities:
         :param server: Server connection
         """
 
-        Functionalities.login(client, server)
+        if client.pin_exists():
+            Functionalities.login_user(client)
+        else:
+            Functionalities.register_client(client, server)
 
     @staticmethod
-    def login(client, server):
+    def register_client(client, server):
         """
         Method to login a user in the server
 
@@ -29,12 +32,33 @@ class Functionalities:
         :param server: Server connection
         """
 
-        username = input('Please insert the username: ')
-        one_time_id = input('Please insert the One Time ID: ')
+        username = input('Please insert the username:\n> ')
+        one_time_id = input('Please insert the One Time ID:\n> ')
 
         signed_one_time_id = base64.b64encode(Cryptography.sign(Connection.get_key(), one_time_id)).decode()
 
         server.send(f'LOGIN:{username}:{one_time_id}:{signed_one_time_id}:{client.get_hostname()}'
                     f':{str(client.get_port())}:{Connection.get_cert()}'.encode())
         response = server.recv(100000).decode()
-        print(response)
+        if response == 'OK':
+            pin = input('Please insert your PIN:\n> ')
+            client.save_pin(username, pin)
+            print('Login successful and PIN set')
+        else:
+            print('Login was not successful, failed on the server')
+
+    @staticmethod
+    def login_user(client):
+        """
+        Method to login a User
+
+         :param client: Client instance, whose properties can be fetched
+        """
+
+        username = input('Please insert the username:\n> ')
+        pin = input('Please insert the PIN:\n> ')
+
+        if client.verify_pin(username, pin):
+            print('Login successful')
+        else:
+            print('Username or PIN wrong')
