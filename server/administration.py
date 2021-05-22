@@ -1,4 +1,5 @@
 import _thread
+import base64
 import logging
 import socket
 
@@ -67,14 +68,15 @@ class Administration:
 
         if parts[0] == 'LOGIN':
             username = parts[1]
-            # TODO: THIS WILL COME CIPHERED, WILL NEED TO DECIPHER
             one_time_id = parts[2]
+            signature = base64.b64decode(parts[3])
+            ip = parts[4]
+            port = parts[5]
+            client_cert = base64.b64decode(parts[6]).decode()
 
-            ip = parts[3]
-            port = parts[4]
-            client_cert = parts[5]
+            valid_signature = Cryptography.verify_signature(client_cert, one_time_id, signature)
 
-            if User.login(username, one_time_id):
+            if valid_signature and User.login(username, one_time_id):
                 client_socket.send('OK'.encode())
             else:
                 client_socket.send('NOTOK'.encode())

@@ -12,7 +12,7 @@ class Connection:
 
     __CA_FILE = 'server.crt'
     __CERT_FILE = 'client.crt'
-    __CLIENT_FILE = 'client.key'
+    __KEY_FILE = 'client.key'
 
     @staticmethod
     def _initialize_ssl_context():
@@ -22,7 +22,7 @@ class Connection:
         """
 
         internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=Connection.__CA_FILE)
-        internal_context.load_cert_chain(certfile=Connection.__CERT_FILE, keyfile=Connection.__CLIENT_FILE)
+        internal_context.load_cert_chain(certfile=Connection.__CERT_FILE, keyfile=Connection.__KEY_FILE)
 
         return internal_context
 
@@ -35,8 +35,18 @@ class Connection:
         """
 
         with open(getcwd() + '/' + Connection.__CERT_FILE, 'r') as f:
-            data = f.read()
-            return base64.b64encode(data.encode())
+            return base64.b64encode(f.read().encode())
+
+    @staticmethod
+    def get_key():
+        """
+        Method to return the Client Private Key
+
+        :return: Private key
+        """
+
+        with open(getcwd() + '/' + Connection.__KEY_FILE, 'r') as f:
+            return f.read()
 
     @staticmethod
     def start_server_connection(server_hostname='127.0.0.1',
