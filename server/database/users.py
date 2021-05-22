@@ -16,7 +16,7 @@ class Database:
         :param username: Username used as the index
         :param data: Data to be saved
         """
-        file = open(getcwd() + DB_FILENAME, 'a')
+        file = open(getcwd() + DB_FILENAME, 'a', 0)
         iv, ciphered_data = Cryptography.cipher(Cryptography.get_passphrase(), data)
         file.write(username + ':' + ciphered_data.hex() + '.' + iv.hex() + '\n')
         file.close()
@@ -71,4 +71,5 @@ class Database:
                     if parts[0] == username:
                         return True
                 return False
-        return True
+        else:
+            return False
