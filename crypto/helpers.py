@@ -27,7 +27,6 @@ class Cryptography:
         Method to define the Server's passphrase
 
         :param passphrase: Passphrase to be stored as the Server's one
-        :return:
         """
 
         Cryptography.__passphrase = passphrase

@@ -15,6 +15,12 @@ class Administration:
 
     @staticmethod
     def run_administration(server):
+        """
+        Method that runs the administration panel
+
+        :param server: Server instance, whose properties can be fetched
+        """
+
         if Cryptography.get_passphrase() == "":
             while len(Cryptography.get_passphrase()) != 32:
                 passphrase = input("Please insert the server's passphrase (32 characters): ")
@@ -48,8 +54,10 @@ class Administration:
     def server_functionalities(client_socket):
         """
         Method to provide options to the clients
+
         :param client_socket: Socket where a connection with a client is happening
         """
+
         if not Administration.RUNNING:
             quit(0)
 

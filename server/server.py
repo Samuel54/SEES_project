@@ -4,63 +4,55 @@ import os
 import sys
 
 from connection import Connection
-from crypto.helpers import Cryptography
 from administration import Administration
-from user import User
 
 
 class Server:
     """
-    Main server implementation. This is the class that will be run on main
+    Main server implementation. This is the class that will be run on main.
     """
+
     _hostname = '127.0.0.1'
     _port = 8080
-
-    @staticmethod
-    def test():
-        Cryptography.set_passphrase("This is secure passphrase to AES")
-        username, one_time_id = User.create()
-        user = User.load_user(username)
-        print('Has login happened? ' + str(user.login_done))
-        result = User.login(username, one_time_id)
-        print('Login successful: ' + str(result))
-        print('User ' + user.username + ' has done the login!')
-        user = User.load_user(username)
-        print('Has login happened? ' + str(user.login_done))
-        result = User.login(username, one_time_id)
-        print('Login successful: ' + str(result))
-        print('User ' + user.username + ' reused the one time id!')
 
     @staticmethod
     def get_hostname():
         """
         Method to get the server's hostname
+
         :return: Server's hostname
         """
+
         return Server._hostname
 
     @staticmethod
     def set_hostname(hostname):
         """
         Method to set the server's hostname
+
         :param hostname: Hostname to be set
         """
+
         Server._hostname = hostname
 
     @staticmethod
     def get_port():
         """
         Method to get the port where the server is listening
+
         :return: Port used
         """
+
         return Server._port
 
     @staticmethod
     def set_port(port):
         """
         Method to set the port where connections will be listened
+
         :param port: Port to be set
         """
+
         Server._port = port
 
     @staticmethod
@@ -68,6 +60,7 @@ class Server:
         """
         Function responsible for running the connections and server bootstrap
         """
+
         # Binds a socket to a specific port
         server_socket = Connection.start_socket(hostname=Server.get_hostname(), port=Server.get_port())
         # Listens to the port waiting for clients, for each client, setups a new thread for interaction
@@ -80,6 +73,7 @@ def main():
     """
     Main thread
     """
+
     logging.basicConfig(filename='logs.log', level=logging.DEBUG, filemode='a')
     _thread.start_new_thread(Administration.run_administration, (Server,))
     Server.start_server()
@@ -89,6 +83,7 @@ if __name__ == '__main__':
     """
     Method to handle the program closing 
     """
+
     try:
         main()
     except KeyboardInterrupt:

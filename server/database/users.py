@@ -3,50 +3,61 @@ from os import getcwd
 
 from crypto.helpers import Cryptography
 
-DB_FILENAME = "/registry"
-
 
 class Database:
+    """
+    User Database. Used to save, update and load users.
+    """
+
+    __DB_FILENAME = "/registry"
     __key_file = getcwd() + 'server.py'
 
     @staticmethod
     def save_user(username, data):
         """
         Method to save a user into the database
+
         :param username: Username used as the index
         :param data: Data to be saved
         """
-        file = open(getcwd() + DB_FILENAME, 'a', 0)
+
+        file = open(getcwd() + Database.__DB_FILENAME, 'a')
         iv, ciphered_data = Cryptography.cipher(Cryptography.get_passphrase(), data)
         file.write(username + ':' + ciphered_data.hex() + '.' + iv.hex() + '\n')
+        file.flush()
         file.close()
 
     @staticmethod
     def update_user(username, data):
         """
         Method to update a user from the database
+
         :param username: Username that targets the user to be updated
         :param data: Data to be saved
         """
-        with open(getcwd() + DB_FILENAME) as file_input, open(getcwd() + DB_FILENAME + '.temp', 'w') as file_output:
+
+        with open(getcwd() + Database.__DB_FILENAME) as file_input,\
+                open(getcwd() + Database.__DB_FILENAME + '.temp', 'w') as file_output:
             for entry in file_input:
                 new_entry = entry
                 if entry.split(':')[0] == username:
                     iv, ciphered_data = Cryptography.cipher(Cryptography.get_passphrase(), data)
                     new_entry = username + ':' + ciphered_data.hex() + '.' + iv.hex() + '\n'
                 file_output.write(new_entry)
-            if os.path.exists(getcwd() + DB_FILENAME):
-                os.remove(getcwd() + DB_FILENAME)
-                os.rename(getcwd() + DB_FILENAME + '.temp', getcwd() + DB_FILENAME)
+            if os.path.exists(getcwd() + Database.__DB_FILENAME):
+                os.remove(getcwd() + Database.__DB_FILENAME)
+                os.rename(getcwd() + Database.__DB_FILENAME + '.temp', getcwd() + Database.__DB_FILENAME)
 
     @staticmethod
     def load_user(username):
         """
         Method to load a user information given a username
+
         :param username: User's username to be be loaded
         :return: User's information
         """
-        with open(getcwd() + DB_FILENAME, 'r') as f:
+
+        with open(getcwd() + Database.__DB_FILENAME, 'r') as f:
             for entry in f:
                 parts = entry.split(':')
                 if parts[0] == username:
@@ -61,11 +72,13 @@ class Database:
     def username_exists(username):
         """
         Method to check if a user exists in the database
+
         :param username: Username whose existence will be check
         :return: True if the user with that username exists, False otherwise
         """
-        if os.path.exists(getcwd() + DB_FILENAME):
-            with open(getcwd() + DB_FILENAME, 'r') as f:
+
+        if os.path.exists(getcwd() + Database.__DB_FILENAME):
+            with open(getcwd() + Database.__DB_FILENAME, 'r') as f:
                 for entry in f:
                     parts = entry.split(':')
                     if parts[0] == username:

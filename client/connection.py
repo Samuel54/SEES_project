@@ -30,8 +30,10 @@ class Connection:
     def get_cert():
         """
         Method to return the Client Certificate
+
         :return: Certificate data encoded in base64
         """
+
         with open(getcwd() + '/' + Connection.__CERT_FILE, 'r') as f:
             data = f.read()
             return base64.b64encode(data.encode())
@@ -41,10 +43,11 @@ class Connection:
                                 server_port=8080,
                                 server_sni='example.com'):
         """
+        Method to start a connection with the server
 
-        :param server_hostname:
-        :param server_port:
-        :param server_sni:
+        :param server_hostname: Server's hostname
+        :param server_port: Server's port
+        :param server_sni: Server's Name Indication
         :return:
         """
 
@@ -64,6 +67,8 @@ class Connection:
     def close(target_socket):
         """
         Method to close a socket
+
         :param target_socket: Socket to be closed
         """
+
         target_socket.close()

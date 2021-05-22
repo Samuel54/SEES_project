@@ -15,10 +15,12 @@ class Connection:
     def start_socket(hostname='localhost', port=8080):
         """
         Method to start the server socket
+
         :param hostname: Hostname on which the server will reply
         :param port: Port from which the server will listen to
         :return: Initialized socket ready to listen for new connections
         """
+
         logging.info('Starting server on: ' + hostname + ':' + str(port))
         internal_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -34,6 +36,7 @@ class Connection:
     def _initialize_ssl_context():
         """
         Method to initialize the parameters for the SSL connection
+
         :return: SSL context ready to be used as a wrapper for a socket
         """
 
@@ -49,9 +52,11 @@ class Connection:
     def accept_connections(listening_socket, function_set):
         """
         Method to accept new client connections
+
         :param function_set: function with the server's functionalities
         :param listening_socket: Socket that will listen to new connections
         """
+
         context = Connection._initialize_ssl_context()
         listening_socket.listen(5)
         while True:
@@ -72,6 +77,8 @@ class Connection:
     def close(server_socket):
         """
         Method to close a socket
+
         :param server_socket: Socket to be closed
         """
+
         server_socket.close()
