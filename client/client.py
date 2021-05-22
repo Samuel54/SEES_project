@@ -1,9 +1,8 @@
 import logging
 import os
-import socket
-import ssl
 import sys
 
+from functionalities import Functionalities
 from connection import Connection
 
 
@@ -50,11 +49,10 @@ class Client:
         """
         # Creates a connection with the server
         server_connection = Connection.start_server_connection()
-
         # Listens to the port waiting for clients, for each client, setups a new thread for interaction
-        # Connection.accept_connections(server_socket, Administration.server_functionalities)
+        Functionalities.server_functionalities(Client, server_connection)
         # Closes the socket when ending everything
-        # server_socket.close()
+        Connection.close(server_connection)
 
 
 def main():

@@ -1,4 +1,5 @@
 import json
+import logging
 
 from crypto.helpers import Cryptography
 from helpers.Random import generate_one_time_id
@@ -108,4 +109,7 @@ class User:
             user_data = json.dumps(user.to_dictionary())
             Database.update_user(user.username, user_data)
             return True
+
+        if user is not None and user.login_done:
+            logging.debug(f'Login retry on {username}')
         return False

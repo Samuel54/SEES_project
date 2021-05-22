@@ -50,7 +50,24 @@ class Administration:
         Method to provide options to the clients
         :param client_socket: Socket where a connection with a client is happening
         """
-
-        client_socket.send('HELLO'.encode())
         if not Administration.RUNNING:
             quit(0)
+
+        data = client_socket.recv().decode()
+        logging.debug(data)
+        parts = data.split(':')
+
+        if parts[0] == 'LOGIN':
+            username = parts[1]
+            # TODO: THIS WILL COME CIPHERED, WILL NEED TO DECIPHER
+            one_time_id = parts[2]
+
+            ip = parts[3]
+            port = parts[4]
+            client_cert = parts[5]
+
+            if User.login(username, one_time_id):
+                client_socket.send('OK'.encode())
+            else:
+                client_socket.send('NOTOK'.encode())
+

@@ -1,13 +1,18 @@
-import _thread
+import base64
 import logging
 import socket
 import ssl
+from os import getcwd
 
 
 class Connection:
     """
     Class that abstracts the setup for client connections
     """
+
+    __CA_FILE = 'server.crt'
+    __CERT_FILE = 'client.crt'
+    __CLIENT_FILE = 'client.key'
 
     @staticmethod
     def _initialize_ssl_context():
@@ -16,10 +21,20 @@ class Connection:
         :return: SSL context ready to be used as a wrapper for a socket
         """
 
-        internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile='server.crt')
-        internal_context.load_cert_chain(certfile='client.crt', keyfile='client.key')
+        internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=Connection.__CA_FILE)
+        internal_context.load_cert_chain(certfile=Connection.__CERT_FILE, keyfile=Connection.__CLIENT_FILE)
 
         return internal_context
+
+    @staticmethod
+    def get_cert():
+        """
+        Method to return the Client Certificate
+        :return: Certificate data encoded in base64
+        """
+        with open(getcwd() + '/' + Connection.__CERT_FILE, 'r') as f:
+            data = f.read()
+            return base64.b64encode(data.encode())
 
     @staticmethod
     def start_server_connection(server_hostname='127.0.0.1',
@@ -39,11 +54,16 @@ class Connection:
             internal_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             connection = context.wrap_socket(internal_socket, server_side=False, server_hostname=server_sni)
             connection.connect((server_hostname, server_port))
+            return connection
         except socket.error as exception:
             logging.error(exception)
             print(exception)
             quit(1)
 
-        result = connection.recv(1024)
-        print(result.decode())
-        connection.close()
+    @staticmethod
+    def close(target_socket):
+        """
+        Method to close a socket
+        :param target_socket: Socket to be closed
+        """
+        target_socket.close()

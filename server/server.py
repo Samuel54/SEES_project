@@ -80,7 +80,7 @@ def main():
     """
     Main thread
     """
-    logging.basicConfig(filename='logs.log', level=logging.INFO, filemode='a')
+    logging.basicConfig(filename='logs.log', level=logging.DEBUG, filemode='a')
     _thread.start_new_thread(Administration.run_administration, (Server,))
     Server.start_server()
 
