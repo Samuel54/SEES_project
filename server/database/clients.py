@@ -1,9 +1,16 @@
+import base64
+from os import getcwd, path, remove, rename
+
+from crypto.helpers import Cryptography
+
+
 class ClientsStore:
     """
     In memory structure to store the clients that are currently online
     """
 
-    __store = {}
+    __DB_FILENAME = "/client_registry"
+    __online = {}
 
     @staticmethod
     def save_client(username, hostname, port, cert):
@@ -16,11 +23,13 @@ class ClientsStore:
         :param cert: Client's certificate
         """
 
-        ClientsStore.__store[username] = {
-            'hostname': hostname,
-            'port': port,
-            'cert': cert
-        }
+        data = f'{hostname}:{port}:{cert}'
+        hashed_username = base64.b64encode(Cryptography.hash(username).digest()).decode()
+        file = open(getcwd() + ClientsStore.__DB_FILENAME, 'a')
+        iv, ciphered_data = Cryptography.cipher(Cryptography.get_passphrase(), data)
+        file.write(hashed_username + ':' + ciphered_data.hex() + '.' + iv.hex() + '\n')
+        file.flush()
+        file.close()
 
     @staticmethod
     def client_exists(username):
@@ -31,7 +40,17 @@ class ClientsStore:
         :return: True if the user has a client stored, False if it doesn't
         """
 
-        return username in ClientsStore.__store
+        hashed_username = base64.b64encode(Cryptography.hash(username).digest()).decode()
+
+        if path.exists(getcwd() + ClientsStore.__DB_FILENAME):
+            with open(getcwd() + ClientsStore.__DB_FILENAME, 'r') as f:
+                for entry in f:
+                    parts = entry.split(':')
+                    if parts[0] == hashed_username:
+                        return True
+                return False
+        else:
+            return False
 
     @staticmethod
     def get_client(username):
@@ -42,4 +61,91 @@ class ClientsStore:
         :return: Client's data
         """
 
-        return ClientsStore.__store[username]
+        data = None
+        hashed_username = base64.b64encode(Cryptography.hash(username).digest()).decode()
+        with open(getcwd() + ClientsStore.__DB_FILENAME, 'r') as f:
+            for entry in f:
+                parts = entry.split(':')
+                if parts[0] == hashed_username:
+                    material = parts[1].split('.')
+                    ciphertext = bytearray.fromhex(material[0])
+                    iv = bytearray.fromhex(material[1])
+                    data = Cryptography.decipher(Cryptography.get_passphrase(), ciphertext, iv).decode()
+        client_info = data.split(':')
+
+        return {
+            'hostname': client_info[0],
+            'port': client_info[1],
+            'cert': client_info[2]
+        }
+
+    @staticmethod
+    def update_client(username, hostname, port, cert):
+        """
+        Method to update a client from the database
+
+        :param username: Username that targets the client to be updated
+        :param hostname: Hostname to be updated
+        :param port: Port to be updated
+        :param cert: Certificate to be updated
+        """
+
+        hashed_username = base64.b64encode(Cryptography.hash(username).digest()).decode()
+        data = f'{hostname}:{port}:{cert}'
+        with open(getcwd() + ClientsStore.__DB_FILENAME) as file_input, \
+                open(getcwd() + ClientsStore.__DB_FILENAME + '.temp', 'w') as file_output:
+            for entry in file_input:
+                new_entry = entry
+                if entry.split(':')[0] == hashed_username:
+                    iv, ciphered_data = Cryptography.cipher(Cryptography.get_passphrase(), data)
+                    new_entry = hashed_username + ':' + ciphered_data.hex() + '.' + iv.hex() + '\n'
+                file_output.write(new_entry)
+            if path.exists(getcwd() + ClientsStore.__DB_FILENAME):
+                remove(getcwd() + ClientsStore.__DB_FILENAME)
+                rename(getcwd() + ClientsStore.__DB_FILENAME + '.temp', getcwd() + ClientsStore.__DB_FILENAME)
+
+    @staticmethod
+    def set_online(username, hostname, port):
+        """
+        Method to set a User online
+        """
+
+        ClientsStore.__online[username] = {
+            'online': True,
+            'hostname': hostname,
+            'port': port
+        }
+
+    @staticmethod
+    def set_offline(username):
+        """
+        Method to set a User offline
+        """
+
+        if username in ClientsStore.__online:
+            ClientsStore.__online[username]['online'] = False
+
+    @staticmethod
+    def is_online(username):
+        """
+        Method to check if a User is online
+
+        :return: True if it is, false otherwise
+        """
+
+        return ClientsStore.__online[username]
+
+    @staticmethod
+    def reverse_lookup(hostname, port):
+        """
+        Method to check whose User belongs a given client
+
+        :param hostname: Client's hostname
+        :param port: Client's port
+        :return: True if it is known, false otherwise
+        """
+
+        for client in ClientsStore.__online:
+            if client['hostname'] == hostname and client['port'] == port:
+                return client['username']
+        return None

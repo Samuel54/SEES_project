@@ -19,7 +19,7 @@ class Functionalities:
         """
 
         if client.pin_exists():
-            Functionalities.login_user(client)
+            Functionalities.login_user(client, server)
         else:
             Functionalities.register_client(client, server)
 
@@ -48,17 +48,25 @@ class Functionalities:
             print('Login was not successful, failed on the server')
 
     @staticmethod
-    def login_user(client):
+    def login_user(client, server):
         """
         Method to login a User
 
-         :param client: Client instance, whose properties can be fetched
+        :param client: Client instance, whose properties can be fetched
+        :param server: Server connection
         """
 
         username = input('Please insert the username:\n> ')
         pin = input('Please insert the PIN:\n> ')
 
-        if client.verify_pin(username, pin):
+        if not client.verify_pin(username, pin):
+            print('Username or PIN wrong')
+            return
+
+        server.send(f'ONLINE:{username}:{client.get_hostname()}:'
+                    f'{str(client.get_port())}:{Connection.get_cert()}'.encode())
+        response = server.recv(100000).decode()
+        if response == 'OK':
             print('Login successful')
         else:
-            print('Username or PIN wrong')
+            print('Login unsuccessful')

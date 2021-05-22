@@ -1,4 +1,3 @@
-import base64
 import logging
 import os
 import sys
@@ -12,7 +11,7 @@ class Client:
     _hostname = '127.0.0.1'
     _port = 8081
     _pin = ''
-    _LOCAL_DATA_FILE = 'data'
+    _LOCAL_DATA_FILE = '/data'
 
     @staticmethod
     def get_hostname():
@@ -54,7 +53,7 @@ class Client:
         """
 
         hashed_pin = Cryptography.hash_data(f'{username}:{pin}')
-        with open(os.getcwd() + '/' + Client._LOCAL_DATA_FILE, 'w') as f:
+        with open(os.getcwd() + Client._LOCAL_DATA_FILE, 'w') as f:
             f.write(hashed_pin.hex())
         f.close()
         Client.set_pin(pin)
@@ -66,8 +65,8 @@ class Client:
 
         :return: True if it does, false otherwise
         """
-        data_file = os.getcwd() + '/' + Client._LOCAL_DATA_FILE
-        if os.path.exists(os.getcwd() + '/' + Client._LOCAL_DATA_FILE):
+        data_file = os.getcwd() + Client._LOCAL_DATA_FILE
+        if os.path.exists(os.getcwd() + Client._LOCAL_DATA_FILE):
             with open(data_file, 'r') as f:
                 hash = f.readline()
             f.close()
@@ -84,7 +83,7 @@ class Client:
         :return: True if it is the same as the one saved, false otherwise
         """
 
-        with open(os.getcwd() + '/' + Client._LOCAL_DATA_FILE, 'r') as f:
+        with open(os.getcwd() + Client._LOCAL_DATA_FILE, 'r') as f:
             pin_hash = f.readline()
         f.close()
 

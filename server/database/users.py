@@ -10,7 +10,7 @@ class Database:
     User Database. Used to save, update and load users.
     """
 
-    __DB_FILENAME = "/registry"
+    __DB_FILENAME = "/user_registry"
     __key_file = getcwd() + 'server.py'
 
     @staticmethod

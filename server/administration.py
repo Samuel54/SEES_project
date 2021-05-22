@@ -4,6 +4,7 @@ import logging
 import socket
 
 from crypto.helpers import Cryptography
+from database.clients import ClientsStore
 from user import User
 
 
@@ -61,23 +62,69 @@ class Administration:
 
         if not Administration.RUNNING:
             quit(0)
+        try:
+            data = client_socket.recv(100000).decode()
+            logging.debug(data)
+            parts = data.split(':')
 
-        data = client_socket.recv(100000).decode()
-        logging.debug(data)
-        parts = data.split(':')
+            if parts[0] == 'LOGIN':
+                Administration.register_user(client_socket, parts)
+            elif parts[0] == 'ONLINE':
+                Administration.set_user_online(client_socket, parts)
+        except ConnectionResetError:
+            host, port = client_socket.getpeername()
+            username = ClientsStore.reverse_lookup(host, port)
+            if username is not None:
+                ClientsStore.set_offline(username)
 
-        if parts[0] == 'LOGIN':
-            username = parts[1]
-            one_time_id = parts[2]
-            signature = base64.b64decode(parts[3])
-            ip = parts[4]
-            port = parts[5]
-            client_cert = base64.b64decode(parts[6]).decode()
+    @staticmethod
+    def register_user(client_socket, parts):
+        """
+        Method to register users and their clients
 
-            valid_signature = Cryptography.verify_signature(client_cert, one_time_id, signature)
+        :param client_socket: Socket where a connection with a client is happening
+        :param parts: Parts of the message that was sent by the client
+        """
 
-            if valid_signature and User.login(username, one_time_id):
-                client_socket.send('OK'.encode())
-            else:
+        username = parts[1]
+        one_time_id = parts[2]
+        signature = base64.b64decode(parts[3])
+        hostname = parts[4]
+        port = parts[5]
+        client_cert = parts[6]
+
+        valid_signature = Cryptography.verify_signature(base64.b64decode(client_cert).decode(),
+                                                        one_time_id,
+                                                        signature)
+
+        if valid_signature and User.login(username, one_time_id):
+            ClientsStore.save_client(username, hostname, port, client_cert)
+            ClientsStore.set_online(username, hostname, port)
+            client_socket.send('OK'.encode())
+        else:
+            client_socket.send('NOTOK'.encode())
+
+    @staticmethod
+    def set_user_online(client_socket, parts):
+        """
+        Method to register users and their clients
+
+        :param client_socket: Socket where a connection with a client is happening
+        :param parts: Parts of the message that was sent by the client
+        """
+
+        username = parts[1]
+        hostname = parts[2]
+        port = parts[3]
+        client_cert = parts[4]
+
+        if ClientsStore.client_exists(username):
+            client = ClientsStore.get_client(username)
+            if client_cert != client['cert']:
                 client_socket.send('NOTOK'.encode())
-
+            else:
+                ClientsStore.update_client(username, hostname, port, client_cert)
+                ClientsStore.set_online(username, hostname, port)
+                client_socket.send('OK'.encode())
+        else:
+            client_socket.send('NOTOK'.encode())

@@ -10,9 +10,9 @@ class Connection:
     Class that abstracts the setup for client connections
     """
 
-    __CA_FILE = 'server.crt'
-    __CERT_FILE = 'client.crt'
-    __KEY_FILE = 'client.key'
+    __CA_FILE = '/server.crt'
+    __CERT_FILE = '/client.crt'
+    __KEY_FILE = '/client.key'
 
     @staticmethod
     def _initialize_ssl_context():
@@ -21,8 +21,10 @@ class Connection:
         :return: SSL context ready to be used as a wrapper for a socket
         """
 
-        internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=Connection.__CA_FILE)
-        internal_context.load_cert_chain(certfile=Connection.__CERT_FILE, keyfile=Connection.__KEY_FILE)
+        internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH,
+                                                      cafile=getcwd() + Connection.__CA_FILE)
+        internal_context.load_cert_chain(certfile=getcwd() + Connection.__CERT_FILE,
+                                         keyfile=getcwd() + Connection.__KEY_FILE)
 
         return internal_context
 
