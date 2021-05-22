@@ -34,8 +34,9 @@ class Connection:
         :return: Certificate data encoded in base64
         """
 
-        with open(getcwd() + '/' + Connection.__CERT_FILE, 'r') as f:
-            return base64.b64encode(f.read().encode())
+        with open(getcwd() + '/' + Connection.__CERT_FILE, 'rb') as f:
+            cert_data = f.read()
+            return base64.b64encode(cert_data).decode()
 
     @staticmethod
     def get_key():

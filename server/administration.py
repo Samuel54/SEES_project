@@ -62,7 +62,7 @@ class Administration:
         if not Administration.RUNNING:
             quit(0)
 
-        data = client_socket.recv().decode()
+        data = client_socket.recv(100000).decode()
         logging.debug(data)
         parts = data.split(':')
 
