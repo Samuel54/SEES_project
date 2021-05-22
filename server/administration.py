@@ -14,7 +14,7 @@ class Administration:
     RUNNING = True
 
     @staticmethod
-    def run_administration(Server):
+    def run_administration(server):
         if Cryptography.get_passphrase() == "":
             while len(Cryptography.get_passphrase()) != 32:
                 passphrase = input("Please insert the server's passphrase (32 characters): ")
@@ -28,20 +28,21 @@ class Administration:
     1 - Create user
     2 - Quit
     > """
-        print("Welcome to the administration panel!")
+        print('Welcome to the administration panel!')
         while True:
             option = int(input(banner))
             if option == 1:
-                User.create()
+                username, one_time_id = User.create()
+                print(f'\nUser created with success!\n\tUsername: {username}\n\tOne Time ID: {one_time_id}\n\n')
             elif option == 2:
-                print("Quitting server...")
-                logging.info("Quitting server...")
+                print('Quitting server...')
+                logging.info('Quitting server...')
                 Administration.RUNNING = False
-                socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((Server.get_hostname(), Server.get_port()))
+                socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((server.get_hostname(), server.get_port()))
                 _thread.interrupt_main()
                 quit(0)
             else:
-                print("Option not valid! Try again.")
+                print('Option not valid! Try again.')
 
     @staticmethod
     def server_functionalities(client_socket):

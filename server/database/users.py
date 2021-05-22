@@ -64,9 +64,11 @@ class Database:
         :param username: Username whose existence will be check
         :return: True if the user with that username exists, False otherwise
         """
-        with open(getcwd() + DB_FILENAME, 'r') as f:
-            for entry in f:
-                parts = entry.split(':')
-                if parts[0] == username:
-                    return True
-            return False
+        if os.path.exists(getcwd() + DB_FILENAME):
+            with open(getcwd() + DB_FILENAME, 'r') as f:
+                for entry in f:
+                    parts = entry.split(':')
+                    if parts[0] == username:
+                        return True
+                return False
+        return True
