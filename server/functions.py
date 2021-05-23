@@ -34,4 +34,5 @@ class Functions:
         :param n: root that will be calculated
         :return: N root of the passed value
         """
+
         return value**(1/float(n))

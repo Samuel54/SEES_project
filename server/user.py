@@ -34,6 +34,15 @@ class User:
         self.one_time_id_hash = one_time_id_hash
         self.login_done = login_done
 
+    def get_clearance_level(self):
+        """
+        Method to get the user's clearance level
+
+        :return: The User's clearance level
+        """
+
+        return self.clearance_level
+
     @staticmethod
     def create():
         """

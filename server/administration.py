@@ -5,6 +5,7 @@ import socket
 
 from crypto.helpers import Cryptography
 from database.clients import ClientsStore
+from functions import Functions
 from user import User
 
 
@@ -14,6 +15,7 @@ class Administration:
     """
 
     RUNNING = True
+    __socket_map = {}
 
     @staticmethod
     def run_administration(server):
@@ -63,19 +65,23 @@ class Administration:
         if not Administration.RUNNING:
             quit(0)
         try:
-            data = client_socket.recv(100000).decode()
-            logging.debug(data)
-            parts = data.split(':')
+            while True:
+                data = client_socket.recv(100000).decode()
+                logging.debug(data)
+                parts = data.split(':')
 
-            if parts[0] == 'LOGIN':
-                Administration.register_user(client_socket, parts)
-            elif parts[0] == 'ONLINE':
-                Administration.set_user_online(client_socket, parts)
+                if parts[0] == 'LOGIN':
+                    Administration.register_user(client_socket, parts)
+                elif parts[0] == 'ONLINE':
+                    Administration.set_user_online(client_socket, parts)
+                elif parts[0] == 'OP':
+                    Administration.perform_operations(client_socket, parts)
+
         except ConnectionResetError:
-            host, port = client_socket.getpeername()
-            username = ClientsStore.reverse_lookup(host, port)
-            if username is not None:
-                ClientsStore.set_offline(username)
+            if client_socket in Administration.__socket_map:
+                username = Administration.__socket_map.pop(client_socket, None)
+                if username is not None:
+                    ClientsStore.set_offline(username)
 
     @staticmethod
     def register_user(client_socket, parts):
@@ -100,6 +106,7 @@ class Administration:
         if valid_signature and User.login(username, one_time_id):
             ClientsStore.save_client(username, hostname, port, client_cert)
             ClientsStore.set_online(username, hostname, port)
+            Administration.__socket_map[client_socket] = username
             client_socket.send('OK'.encode())
         else:
             client_socket.send('NOTOK'.encode())
@@ -128,3 +135,40 @@ class Administration:
                 client_socket.send('OK'.encode())
         else:
             client_socket.send('NOTOK'.encode())
+
+    @staticmethod
+    def perform_operations(client_socket, parts):
+        username = parts[1]
+        signature = base64.b64decode(parts[2])
+        n = int(parts[3])
+        number = int(parts[4])
+        user = User.load_user(username)
+        client = ClientsStore.get_client(username)
+
+        valid_signature = Cryptography.verify_signature(base64.b64decode(client['cert']).decode(),
+                                                        username,
+                                                        signature)
+        if n <= 0.0:
+            client_socket.send('INVALID'.encode())
+            return
+
+        if valid_signature:
+            clearance = user.get_clearance_level()
+            if clearance == 1 and n > 2:
+                client_socket.send('UNAUTHORIZED'.encode())
+                return
+            if clearance == 1 and n > 3:
+                client_socket.send('UNAUTHORIZED'.encode())
+                return
+            if n == 2:
+                result = Functions.square_root(number)
+            elif n == 3:
+                result = Functions.cubic_root(number)
+            else:
+                result = Functions.n_root(number, n)
+
+            client_socket.send(str(result).encode())
+
+        else:
+            client_socket.send('UNAUTHORIZED'.encode())
+            return

@@ -12,6 +12,7 @@ class Client:
     _port = 8081
     _pin = ''
     _LOCAL_DATA_FILE = '/data'
+    _username = ''
 
     @staticmethod
     def get_hostname():
@@ -32,6 +33,26 @@ class Client:
         """
 
         Client._hostname = hostname
+
+    @staticmethod
+    def get_username():
+        """
+        Method to get the user's username
+
+        :return: User's username
+        """
+
+        return Client._username
+
+    @staticmethod
+    def set_username(username):
+        """
+        Method to set the user's username
+
+        :param username: Username to be set
+        """
+
+        Client._username = username
 
     @staticmethod
     def set_pin(pin):
@@ -129,8 +150,6 @@ class Client:
         server_connection = Connection.start_server_connection()
         # Listens to the port waiting for clients, for each client, setups a new thread for interaction
         Functionalities.server_functionalities(Client, server_connection)
-        # Closes the socket when ending everything
-        Connection.close(server_connection)
 
 
 def main():

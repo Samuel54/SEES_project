@@ -146,6 +146,7 @@ class ClientsStore:
         """
 
         for client in ClientsStore.__online:
-            if client['hostname'] == hostname and client['port'] == port:
+            if ClientsStore.__online[client]['hostname'] == hostname \
+                    and ClientsStore.__online[client]['port'] == port:
                 return client['username']
         return None
