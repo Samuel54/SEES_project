@@ -56,6 +56,10 @@ class Connection:
 
         internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH,
                                                       cafile=getcwd() + Connection.__CA_FILE)
+        # Hammer here
+        internal_context.check_hostname = False
+        internal_context.verify_mode = ssl.CERT_NONE
+
         internal_context.load_cert_chain(certfile=getcwd() + Connection.__CERT_FILE,
                                          keyfile=getcwd() + Connection.__KEY_FILE)
 
@@ -120,6 +124,30 @@ class Connection:
             internal_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             connection = context.wrap_socket(internal_socket, server_side=False, server_hostname=server_sni)
             connection.connect((server_hostname, server_port))
+            return connection
+        except socket.error as exception:
+            logging.error(exception)
+            print(exception)
+            quit(1)
+
+    @staticmethod
+    def start_target_connection(target_hostname,
+                                target_port,
+                                target_sni='example.com'):
+        """
+        Method to start a connection with a given client
+
+        :param target_hostname: Target's hostname
+        :param target_port: Port's hostname
+        :param target_sni: Target's SNI
+        """
+
+        logging.info('Reaching client on: ' + target_hostname + ':' + str(target_port))
+        context = Connection._initialize_client_ssl_context()
+        try:
+            internal_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            connection = context.wrap_socket(internal_socket, server_side=False, server_hostname=target_sni)
+            connection.connect((target_hostname, int(target_port)))
             return connection
         except socket.error as exception:
             logging.error(exception)

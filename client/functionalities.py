@@ -1,5 +1,6 @@
 import base64
 import pickle
+from datetime import datetime
 
 from connection import Connection
 from crypto.helpers import Cryptography
@@ -141,11 +142,10 @@ class Functionalities:
         # Now we know which username the user wants
         username = user_list[selected_index]
         # Now we know the user's client
+        print(username)
         selected_client = client.get_user(username)
-        # TODO : START CONNECTION, INPUT MESSAGE, SAVE MESSAGE, OUTPUT REPLY, SAVE REPLY
-        # _thread.start_new_thread(client.start_client_connection, (selected_client['hostname'],
-        #                                                           selected_client['port'],
-        #                                                           selected_client['certificate']))
+        print(selected_client)
+        Functionalities.send_message(client, selected_client)
 
     @staticmethod
     def server_operations(client, server):
@@ -217,9 +217,22 @@ class Functionalities:
 
             message = incoming_socket.recv(100000).decode()
             parts = message.split(':')
-
             print(f'Message received from {parts[0]} at {parts[1]}:\n{parts[2]}')
             client.save_message(message)
+
+    @staticmethod
+    def send_message(local_client, target_client):
+        target_connection = Connection.start_target_connection(target_client['hostname'],
+                                                               target_client['port'])
+        continue_messages = True
+        while continue_messages:
+            message = input('Write your message: ')
+            data = f'{local_client.get_username()}:{datetime.now()}:{message}'.encode()
+            target_connection.send(data)
+            local_client.save_message(data)
+            answer = input('Do you want to quit now? (Y/N\n > ')
+            if answer.lower() == 'y':
+                continue_messages = False
 
     @staticmethod
     def shutdown(server):
