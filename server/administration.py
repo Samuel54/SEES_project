@@ -1,6 +1,7 @@
 import _thread
 import base64
 import logging
+import pickle
 import socket
 
 from crypto.helpers import Cryptography
@@ -67,7 +68,6 @@ class Administration:
         try:
             while True:
                 data = client_socket.recv(100000).decode()
-                logging.debug(data)
                 parts = data.split(':')
 
                 if parts[0] == 'LOGIN':
@@ -76,6 +76,8 @@ class Administration:
                     Administration.set_user_online(client_socket, parts)
                 elif parts[0] == 'OP':
                     Administration.perform_operations(client_socket, parts)
+                elif parts[0] == 'LIST':
+                    Administration.list_users(client_socket, parts)
 
         except ConnectionResetError:
             if client_socket in Administration.__socket_map:
@@ -138,6 +140,13 @@ class Administration:
 
     @staticmethod
     def perform_operations(client_socket, parts):
+        """
+        Method to execute the privileged operations
+
+        :param client_socket: Socket where a connection with a client is happening
+        :param parts: Parts of the message that was sent by the client
+        """
+
         username = parts[1]
         signature = base64.b64decode(parts[2])
         n = int(parts[3])
@@ -168,7 +177,25 @@ class Administration:
                 result = Functions.n_root(number, n)
 
             client_socket.send(str(result).encode())
+        else:
+            client_socket.send('UNAUTHORIZED'.encode())
+
+    @staticmethod
+    def list_users(client_socket, parts):
+        username = parts[1]
+        signature = base64.b64decode(parts[2])
+
+        user = User.load_user(username)
+        client = ClientsStore.get_client(username)
+
+        valid_signature = Cryptography.verify_signature(base64.b64decode(client['cert']).decode(),
+                                                        username,
+                                                        signature)
+
+        if valid_signature:
+            user_list = ClientsStore.list_users(username, user.get_clearance_level())
+            encoded_list = pickle.dumps(user_list)
+            client_socket.send(encoded_list)
 
         else:
             client_socket.send('UNAUTHORIZED'.encode())
-            return

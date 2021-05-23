@@ -15,9 +15,40 @@ class Connection:
     __KEY_FILE = '/client.key'
 
     @staticmethod
+    def set_ca_file(file):
+        """
+        Method to set the CA file
+
+        :param file: File location to be set
+        """
+
+        Connection.__CA_FILE = file
+
+    @staticmethod
+    def set_cert_file(file):
+        """
+        Method to set the cert file
+
+        :param file: File location to be set
+        """
+
+        Connection.__CERT_FILE = file
+
+    @staticmethod
+    def set_key_file(file):
+        """
+        Method to set the key file
+
+        :param file: File location to be set
+        """
+
+        Connection.__KEY_FILE = file
+
+    @staticmethod
     def _initialize_ssl_context():
         """
         Method to initialize the parameters for the SSL connection
+
         :return: SSL context ready to be used as a wrapper for a socket
         """
 

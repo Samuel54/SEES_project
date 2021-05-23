@@ -2,6 +2,7 @@ import base64
 from os import getcwd, path, remove, rename
 
 from crypto.helpers import Cryptography
+from user import User
 
 
 class ClientsStore:
@@ -80,6 +81,27 @@ class ClientsStore:
         }
 
     @staticmethod
+    def list_users(username, clearance_level):
+        """
+        Method to list the User's that are online and which clearance level is compatible with the asking user
+
+        :param username: Username of the user that is asking for the list
+        :param clearance_level: Clearance level of the user that is asking for the list
+        :return: List of online users that the user can see
+        """
+
+        user_list = []
+        for user in ClientsStore.__online:
+            if user != username:
+                if ClientsStore.is_online(username):
+                    saved_user = User.load_user(username)
+                    if saved_user.get_clearance_level() <= clearance_level:
+                        user_entry = ClientsStore.get_client(username)
+                        user_entry['username'] = user
+                        user_list.append(user_entry)
+        return user_list
+
+    @staticmethod
     def update_client(username, hostname, port, cert):
         """
         Method to update a client from the database
@@ -108,6 +130,10 @@ class ClientsStore:
     def set_online(username, hostname, port):
         """
         Method to set a User online
+
+        :param username: Username of the user to save on the online list
+        :param hostname: User's Client hostname
+        :param port: User's Client port
         """
 
         ClientsStore.__online[username] = {
@@ -120,6 +146,8 @@ class ClientsStore:
     def set_offline(username):
         """
         Method to set a User offline
+
+        :param username: Username of the user to set offline
         """
 
         if username in ClientsStore.__online:

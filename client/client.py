@@ -15,6 +15,16 @@ class Client:
     _username = ''
 
     @staticmethod
+    def set_local_file(filename):
+        """
+        Method to set the file where the data will be stored
+
+        :filename: File to be set
+        """
+
+        Client._LOCAL_DATA_FILE = filename
+
+    @staticmethod
     def get_hostname():
         """
         Method to get the server's hostname
@@ -152,10 +162,23 @@ class Client:
         Functionalities.server_functionalities(Client, server_connection)
 
 
-def main():
+def main(hostname='127.0.0.1',
+         port=8081,
+         database_location='/data',
+         client_cert='/client.crt',
+         client_key='/client.key',
+         ca_file='/server.crt'):
     """
     Main thread
     """
+
+    Client.set_hostname(hostname)
+    Client.set_port(port)
+    Client.set_local_file(database_location)
+
+    Connection.set_ca_file(ca_file)
+    Connection.set_cert_file(client_cert)
+    Connection.set_key_file(client_key)
 
     logging.basicConfig(filename='logs.log', level=logging.INFO, filemode='a')
     Client.start_client()
@@ -167,7 +190,10 @@ if __name__ == '__main__':
     """
 
     try:
-        main()
+        if len(sys.argv) != 7:
+            main()
+        else:
+            main(sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
     except KeyboardInterrupt:
         try:
             sys.exit(0)

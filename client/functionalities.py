@@ -1,4 +1,5 @@
 import base64
+import pickle
 
 from connection import Connection
 from crypto.helpers import Cryptography
@@ -6,7 +7,7 @@ from crypto.helpers import Cryptography
 
 class Functionalities:
     """
-        Client set of functionalities
+        Client's set of functionalities
     """
 
     @staticmethod
@@ -97,7 +98,21 @@ class Functionalities:
 
     @staticmethod
     def list_users(client, server):
-        return True
+        """
+        Method that accepts list requests
+
+        :param client: Client instance, whose properties can be fetched
+        :param server: Server connection
+        """
+        signed_username = base64.b64encode(Cryptography.sign(Connection.get_key(), client.get_username())).decode()
+        server.send(f'LIST:{client.get_username()}:{signed_username}'.encode())
+        response = server.recv(100000000)
+        if response[0] != 0x80:
+            if response.decode() == 'UNAUTHORIZED':
+                print("You don't have permissions to perform this operation!")
+                return None
+        # TODO: SAVE LIST OF ONLINE USERS TO LOCAL CACHE
+        print(pickle.loads(response))
 
     @staticmethod
     def chat_with_user(client, server):
@@ -106,7 +121,10 @@ class Functionalities:
     @staticmethod
     def server_operations(client, server):
         """
+        Method responsible for the interaction with the server on the privileged operations
 
+        :param client: Client instance, whose properties can be fetched
+        :param server: Server connection
         """
 
         operation_options = """Which operation do you want to execute?
