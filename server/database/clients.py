@@ -94,7 +94,7 @@ class ClientsStore:
         for user in ClientsStore.__online:
             if user != username:
                 if ClientsStore.is_online(username):
-                    saved_user = User.load_user(username)
+                    saved_user = User.load_user(user)
                     if saved_user.get_clearance_level() <= clearance_level:
                         user_entry = ClientsStore.get_client(username)
                         user_entry['username'] = user
