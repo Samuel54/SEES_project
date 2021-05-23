@@ -1,3 +1,4 @@
+import _thread
 import logging
 import os
 import sys
@@ -13,7 +14,7 @@ class Client:
     _pin = ''
     _LOCAL_DATA_FILE = '/data'
     _username = ''
-    _userstore = {}
+    _users_store = {}
 
     @staticmethod
     def set_local_file(filename):
@@ -36,7 +37,7 @@ class Client:
         :param cert: Cert to be saved
         """
 
-        Client._userstore[username] = {
+        Client._users_store[username] = {
             'hostname': hostname,
             'port': port,
             'certificate': cert
@@ -51,7 +52,11 @@ class Client:
         :return: Where can that user be contacted
         """
 
-        return Client._userstore[username]
+        return Client._users_store[username]
+
+    @staticmethod
+    def list_users():
+        return list(Client._users_store)
 
     @staticmethod
     def remove_user(username):
@@ -61,7 +66,7 @@ class Client:
         :param username: Username to be removed
         """
 
-        Client._userstore.pop(username, None)
+        Client._users_store.pop(username, None)
 
     @staticmethod
     def get_hostname():
@@ -136,7 +141,7 @@ class Client:
         :return: True if it does, false otherwise
         """
         data_file = os.getcwd() + Client._LOCAL_DATA_FILE
-        if os.path.exists(os.getcwd() + Client._LOCAL_DATA_FILE):
+        if os.path.exists(data_file):
             with open(data_file, 'r') as f:
                 hash = f.readline()
             f.close()
@@ -180,6 +185,20 @@ class Client:
         return Client._port
 
     @staticmethod
+    def save_message(message):
+        """
+        Method to persist a message
+
+        :param message: Message to be saved
+        """
+
+        file = open(os.getcwd() + Client._LOCAL_DATA_FILE, 'a')
+        iv, ciphered_data = Cryptography.cipher(Client.get_pin(), f'{message: <32}')
+        file.write(ciphered_data.hex() + '.' + iv.hex() + '\n')
+        file.flush()
+        file.close()
+
+    @staticmethod
     def set_port(port):
         """
         Method to set the port where connections will be listened
@@ -199,6 +218,16 @@ class Client:
         server_connection = Connection.start_server_connection()
         # Listens to the port waiting for clients, for each client, setups a new thread for interaction
         Functionalities.server_functionalities(Client, server_connection)
+
+    @staticmethod
+    def listen_for_messages():
+        """
+        Function responsible for receiving messages
+        """
+
+        listening_socket = Connection.start_client_connection(hostname=Client.get_hostname(), port=Client.get_port())
+        Connection.accept_connections(listening_socket, Client, Functionalities.receive_messages)
+        listening_socket.close()
 
 
 def main(hostname='127.0.0.1',
@@ -220,6 +249,7 @@ def main(hostname='127.0.0.1',
     Connection.set_key_file(client_key)
 
     logging.basicConfig(filename='logs.log', level=logging.INFO, filemode='a')
+    _thread.start_new_thread(Client.listen_for_messages, ())
     Client.start_client()
 
 

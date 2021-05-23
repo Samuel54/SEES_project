@@ -36,7 +36,7 @@ class Functionalities:
                 if option == 1:
                     Functionalities.list_users(client, server)
                 elif option == 2:
-                    Functionalities.chat_with_user(client, server)
+                    Functionalities.chat_with_user(client)
                 elif option == 3:
                     Functionalities.server_operations(client, server)
                 elif option == 4:
@@ -124,8 +124,28 @@ class Functionalities:
                 user['cert'])
 
     @staticmethod
-    def chat_with_user(client, server):
-        return True
+    def chat_with_user(client):
+        """
+        Method to chat with a given user
+
+        :param client: Client instance, whose properties can be fetched
+        """
+
+        print('Select which user do you want to talk to:')
+        user_list = client.list_users()
+        selected_index = -1
+        while selected_index < 0 or selected_index > len(user_list) - 1:
+            for index in range(len(user_list)):
+                print(f'  {index + 1}) {user_list[index]}')
+            selected_index = int(input('  > ')) - 1
+        # Now we know which username the user wants
+        username = user_list[selected_index]
+        # Now we know the user's client
+        selected_client = client.get_user(username)
+        # TODO : START CONNECTION, INPUT MESSAGE, SAVE MESSAGE, OUTPUT REPLY, SAVE REPLY
+        # _thread.start_new_thread(client.start_client_connection, (selected_client['hostname'],
+        #                                                           selected_client['port'],
+        #                                                           selected_client['certificate']))
 
     @staticmethod
     def server_operations(client, server):
@@ -190,12 +210,24 @@ class Functionalities:
         return float(response)
 
     @staticmethod
+    def receive_messages(incoming_socket, client):
+        while True:
+            if not Connection.RUNNING:
+                quit(0)
+
+            message = incoming_socket.recv(100000).decode()
+            parts = message.split(':')
+
+            print(f'Message received from {parts[0]} at {parts[1]}:\n{parts[2]}')
+            client.save_message(message)
+
+    @staticmethod
     def shutdown(server):
         """
         Method to shutdown the client app
 
         :param server: Server socket whose connection will be closed
         """
-
+        Connection.RUNNING = False
         Connection.close(server)
         quit(0)
