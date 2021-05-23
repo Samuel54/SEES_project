@@ -104,6 +104,7 @@ class Functionalities:
         :param client: Client instance, whose properties can be fetched
         :param server: Server connection
         """
+
         signed_username = base64.b64encode(Cryptography.sign(Connection.get_key(), client.get_username())).decode()
         server.send(f'LIST:{client.get_username()}:{signed_username}'.encode())
         response = server.recv(100000000)
@@ -111,8 +112,16 @@ class Functionalities:
             if response.decode() == 'UNAUTHORIZED':
                 print("You don't have permissions to perform this operation!")
                 return None
-        # TODO: SAVE LIST OF ONLINE USERS TO LOCAL CACHE
-        print(pickle.loads(response))
+
+        user_list = pickle.loads(response)
+        print('Online users are:')
+        for user in user_list:
+            print('> ' + user['username'])
+            client.add_user(
+                user['username'],
+                user['hostname'],
+                user['port'],
+                user['cert'])
 
     @staticmethod
     def chat_with_user(client, server):

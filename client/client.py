@@ -13,16 +13,55 @@ class Client:
     _pin = ''
     _LOCAL_DATA_FILE = '/data'
     _username = ''
+    _userstore = {}
 
     @staticmethod
     def set_local_file(filename):
         """
         Method to set the file where the data will be stored
 
-        :filename: File to be set
+        :param filename: File to be set
         """
 
         Client._LOCAL_DATA_FILE = filename
+
+    @staticmethod
+    def add_user(username, hostname, port, cert):
+        """
+        Method to add a online user to a in-memory structure
+
+        :param username: Username to be saved
+        :param hostname: Hostname to be saved
+        :param port: Port to be saved
+        :param cert: Cert to be saved
+        """
+
+        Client._userstore[username] = {
+            'hostname': hostname,
+            'port': port,
+            'certificate': cert
+        }
+
+    @staticmethod
+    def get_user(username):
+        """
+        Method to get a online user from the in-memory structure
+
+        :param username: Username to be fetched
+        :return: Where can that user be contacted
+        """
+
+        return Client._userstore[username]
+
+    @staticmethod
+    def remove_user(username):
+        """
+        Method to remove a online user from the in-memory structure
+
+        :param username: Username to be removed
+        """
+
+        Client._userstore.pop(username, None)
 
     @staticmethod
     def get_hostname():
