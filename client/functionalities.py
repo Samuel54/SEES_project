@@ -212,6 +212,13 @@ class Functionalities:
 
     @staticmethod
     def receive_messages(incoming_socket, client):
+        """
+        Method to send a message to a given user
+
+        :param incoming_socket: Socket to where the message will be received
+        :param client: Client instance, whose properties can be fetched
+        """
+
         username = ''
         while True:
             if not Connection.RUNNING:
@@ -228,6 +235,13 @@ class Functionalities:
 
     @staticmethod
     def send_message(local_client, target_client):
+        """
+        Method to send a message to a given user
+
+        :param local_client: Client instance, whose properties can be fetched
+        :param target_client: Socket to where the message will be sent
+        """
+
         target_connection = Connection.start_target_connection(target_client['hostname'],
                                                                target_client['port'])
         continue_messages = True
@@ -247,6 +261,7 @@ class Functionalities:
 
         :param server: Server socket whose connection will be closed
         """
+
         Connection.RUNNING = False
         Connection.close(server)
         quit(0)
