@@ -1,3 +1,7 @@
+python3 -m venv venv
+
+source venv/bin/activate
+
 ## RUN SERVER
 python -m server.server
 
