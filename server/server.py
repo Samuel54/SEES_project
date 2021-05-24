@@ -3,8 +3,8 @@ import logging
 import os
 import sys
 
-from connection import Connection
-from administration import Administration
+from server.connection import Connection
+from server.administration import Administration
 
 
 class Server:

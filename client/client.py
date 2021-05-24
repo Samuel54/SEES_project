@@ -3,9 +3,9 @@ import logging
 import os
 import sys
 
-from connection import Connection
+from client.connection import Connection
 from crypto.helpers import Cryptography
-from functionalities import Functionalities
+from client.functionalities import Functionalities
 
 
 class Client:
@@ -128,7 +128,7 @@ class Client:
         """
 
         hashed_pin = Cryptography.hash_data(f'{username}:{pin}')
-        with open(os.getcwd() + Client._LOCAL_DATA_FILE, 'w') as f:
+        with open(Client._LOCAL_DATA_FILE, 'w') as f:
             f.write(hashed_pin.hex()+'\n')
         f.close()
         Client.set_pin(pin)
@@ -140,7 +140,7 @@ class Client:
 
         :return: True if it does, false otherwise
         """
-        data_file = os.getcwd() + Client._LOCAL_DATA_FILE
+        data_file = Client._LOCAL_DATA_FILE
         if os.path.exists(data_file):
             with open(data_file, 'r') as f:
                 hash = f.readline().strip()
@@ -158,7 +158,7 @@ class Client:
         :return: True if it is the same as the one saved, false otherwise
         """
 
-        with open(os.getcwd() + Client._LOCAL_DATA_FILE, 'r') as f:
+        with open(Client._LOCAL_DATA_FILE, 'r') as f:
             pin_hash = f.readline().strip()
         f.close()
 
@@ -192,7 +192,7 @@ class Client:
         :param message: Message to be saved
         """
 
-        file = open(os.getcwd() + Client._LOCAL_DATA_FILE, 'a')
+        file = open(Client._LOCAL_DATA_FILE, 'a')
         iv, ciphered_data = Cryptography.cipher(f'{Client.get_pin(): <32}', message)
         file.write(ciphered_data.hex() + '.' + iv.hex() + '\n')
         file.flush()

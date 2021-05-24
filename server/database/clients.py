@@ -2,7 +2,7 @@ import base64
 from os import getcwd, path, remove, rename
 
 from crypto.helpers import Cryptography
-from user import User
+from server.user import User
 
 
 class ClientsStore:

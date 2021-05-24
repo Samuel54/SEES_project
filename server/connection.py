@@ -3,7 +3,7 @@ import logging
 import socket
 import ssl
 
-from administration import Administration
+from server.administration import Administration
 
 
 class Connection:
@@ -42,8 +42,8 @@ class Connection:
 
         internal_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         internal_context.verify_mode = ssl.CERT_REQUIRED
-        internal_context.load_cert_chain(certfile='server.crt', keyfile='server.key')
-        internal_context.load_verify_locations(cafile='client.crt')
+        internal_context.load_cert_chain(certfile='server/server.crt', keyfile='server/server.key')
+        internal_context.load_verify_locations(cafile='server/client.crt')
         internal_context.set_ecdh_curve('prime256v1')
 
         return internal_context

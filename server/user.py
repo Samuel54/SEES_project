@@ -3,7 +3,7 @@ import logging
 
 from crypto.helpers import Cryptography
 from helpers.Random import generate_one_time_id
-from database.users import Database
+from server.database.users import Database
 
 
 class User:

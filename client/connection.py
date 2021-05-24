@@ -54,14 +54,13 @@ class Connection:
         :return: SSL context ready to be used as a wrapper for a socket
         """
 
-        internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH,
-                                                      cafile=getcwd() + Connection.__CA_FILE)
+        internal_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=Connection.__CA_FILE)
         # Hammer here
         internal_context.check_hostname = False
         internal_context.verify_mode = ssl.CERT_NONE
 
-        internal_context.load_cert_chain(certfile=getcwd() + Connection.__CERT_FILE,
-                                         keyfile=getcwd() + Connection.__KEY_FILE)
+        internal_context.load_cert_chain(certfile=Connection.__CERT_FILE,
+                                         keyfile=Connection.__KEY_FILE)
 
         return internal_context
 
@@ -75,9 +74,9 @@ class Connection:
 
         this_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         this_context.verify_mode = ssl.CERT_REQUIRED
-        this_context.load_cert_chain(certfile=getcwd() + Connection.__CERT_FILE,
-                                     keyfile=getcwd() + Connection.__KEY_FILE)
-        this_context.load_verify_locations(cafile=getcwd() + Connection.__CERT_FILE)
+        this_context.load_cert_chain(certfile=Connection.__CERT_FILE,
+                                     keyfile=Connection.__KEY_FILE)
+        this_context.load_verify_locations(cafile=Connection.__CERT_FILE)
         this_context.set_ecdh_curve('prime256v1')
 
         return this_context
@@ -90,7 +89,7 @@ class Connection:
         :return: Certificate data encoded in base64
         """
 
-        with open(getcwd() + '/' + Connection.__CERT_FILE, 'rb') as f:
+        with open(Connection.__CERT_FILE, 'rb') as f:
             cert_data = f.read()
             return base64.b64encode(cert_data).decode()
 
@@ -102,7 +101,7 @@ class Connection:
         :return: Private key
         """
 
-        with open(getcwd() + '/' + Connection.__KEY_FILE, 'r') as f:
+        with open(Connection.__KEY_FILE, 'r') as f:
             return f.read()
 
     @staticmethod
