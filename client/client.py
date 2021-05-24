@@ -129,7 +129,7 @@ class Client:
 
         hashed_pin = Cryptography.hash_data(f'{username}:{pin}')
         with open(os.getcwd() + Client._LOCAL_DATA_FILE, 'w') as f:
-            f.write(hashed_pin.hex())
+            f.write(hashed_pin.hex()+'\n')
         f.close()
         Client.set_pin(pin)
 
@@ -143,7 +143,7 @@ class Client:
         data_file = os.getcwd() + Client._LOCAL_DATA_FILE
         if os.path.exists(data_file):
             with open(data_file, 'r') as f:
-                hash = f.readline()
+                hash = f.readline().strip()
             f.close()
 
             return len(hash) > 0
@@ -159,7 +159,7 @@ class Client:
         """
 
         with open(os.getcwd() + Client._LOCAL_DATA_FILE, 'r') as f:
-            pin_hash = f.readline()
+            pin_hash = f.readline().strip()
         f.close()
 
         return Cryptography.verify_hash(f'{username}:{pin}', pin_hash)
@@ -193,7 +193,7 @@ class Client:
         """
 
         file = open(os.getcwd() + Client._LOCAL_DATA_FILE, 'a')
-        iv, ciphered_data = Cryptography.cipher(Client.get_pin(), f'{message: <32}')
+        iv, ciphered_data = Cryptography.cipher(f'{Client.get_pin(): <32}', message)
         file.write(ciphered_data.hex() + '.' + iv.hex() + '\n')
         file.flush()
         file.close()

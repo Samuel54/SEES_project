@@ -115,14 +115,17 @@ class Functionalities:
                 return None
 
         user_list = pickle.loads(response)
-        print('Online users are:')
-        for user in user_list:
-            print('> ' + user['username'])
-            client.add_user(
-                user['username'],
-                user['hostname'],
-                user['port'],
-                user['cert'])
+        if len(user_list) > 0:
+            print('Online users are:')
+            for user in user_list:
+                print('> ' + user['username'])
+                client.add_user(
+                    user['username'],
+                    user['hostname'],
+                    user['port'],
+                    user['cert'])
+        else:
+            print('No users online!')
 
     @staticmethod
     def chat_with_user(client):
@@ -142,9 +145,7 @@ class Functionalities:
         # Now we know which username the user wants
         username = user_list[selected_index]
         # Now we know the user's client
-        print(username)
         selected_client = client.get_user(username)
-        print(selected_client)
         Functionalities.send_message(client, selected_client)
 
     @staticmethod
@@ -211,14 +212,19 @@ class Functionalities:
 
     @staticmethod
     def receive_messages(incoming_socket, client):
+        username = ''
         while True:
             if not Connection.RUNNING:
                 quit(0)
-
-            message = incoming_socket.recv(100000).decode()
-            parts = message.split(':')
-            print(f'Message received from {parts[0]} at {parts[1]}:\n{parts[2]}')
-            client.save_message(message)
+            try:
+                message = incoming_socket.recv(100000).decode()
+                parts = message.split('|')
+                print(f'Message received from {parts[0]} at {parts[1]}:\n{parts[2]}')
+                username = parts[0]
+                client.save_message(message)
+            except ConnectionResetError:
+                print(f'\n{username} closed chat!\n\n')
+                return
 
     @staticmethod
     def send_message(local_client, target_client):
@@ -226,11 +232,11 @@ class Functionalities:
                                                                target_client['port'])
         continue_messages = True
         while continue_messages:
-            message = input('Write your message: ')
-            data = f'{local_client.get_username()}:{datetime.now()}:{message}'.encode()
-            target_connection.send(data)
+            message = input('\n\nWrite your message: ')
+            data = f'{local_client.get_username()}|{datetime.now()}|{message}'
+            target_connection.send(data.encode())
             local_client.save_message(data)
-            answer = input('Do you want to quit now? (Y/N\n > ')
+            answer = input('\n\nDo you want to quit now? (Y/N)\n > ')
             if answer.lower() == 'y':
                 continue_messages = False
 
