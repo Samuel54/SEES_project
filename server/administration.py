@@ -5,9 +5,9 @@ import pickle
 import socket
 
 from crypto.helpers import Cryptography
-from database.clients import ClientsStore
-from functions import Functions
-from user import User
+from server.database.clients import ClientsStore
+from server.functions import Functions
+from server.user import User
 
 
 class Administration:

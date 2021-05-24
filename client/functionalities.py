@@ -2,7 +2,7 @@ import base64
 import pickle
 from datetime import datetime
 
-from connection import Connection
+from client.connection import Connection
 from crypto.helpers import Cryptography
 
 
