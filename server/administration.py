@@ -166,7 +166,7 @@ class Administration:
             if clearance == 1 and n > 2:
                 client_socket.send('UNAUTHORIZED'.encode())
                 return
-            if clearance == 1 and n > 3:
+            if clearance == 2 and n > 3:
                 client_socket.send('UNAUTHORIZED'.encode())
                 return
             if n == 2:
